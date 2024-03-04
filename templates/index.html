@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO2 Emission Prediction</title>
+</head>
+<body>
+    <h1>CO2 Emission Prediction</h1>
+
+    <form id="predictionForm">
+        <label for="plant">Plant:</label>
+        <select id="plant" name="plant"></select>
+
+        <label for="type">Type:</label>
+        <select id="type" name="type"></select>
+
+        <label for="treatment">Treatment:</label>
+        <select id="treatment" name="treatment"></select>
+
+        <label for="conc">Conc:</label>
+        <input type="number" id="conc" name="conc" required>
+
+        <button type="button" onclick="predictEmission()">Predict Emission</button>
+    </form>
+
+    <div id="predictionResult"></div>
+
+    <script>
+        // Fetch data for dropdowns on page load
+        fetch('/api/get_plants')
+            .then(response => response.json())
+            .then(data => {
+                const plantDropdown = document.getElementById('plant');
+                data.plants.forEach(plant => {
+                    const option = document.createElement('option');
+                    option.value = plant;
+                    option.textContent = plant;
+                    plantDropdown.appendChild(option);
+                });
+            });
+
+        fetch('/api/get_types')
+            .then(response => response.json())
+            .then(data => {
+                const typeDropdown = document.getElementById('type');
+                data.types.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    typeDropdown.appendChild(option);
+                });
+            });
+
+        fetch('/api/get_treatments')
+            .then(response => response.json())
+            .then(data => {
+                const treatmentDropdown = document.getElementById('treatment');
+                data.treatments.forEach(treatment => {
+                    const option = document.createElement('option');
+                    option.value = treatment;
+                    option.textContent = treatment;
+                    treatmentDropdown.appendChild(option);
+                });
+            });
+
+        // Function to make prediction
+        function predictEmission() {
+            const plant = document.getElementById('plant').value;
+            const type = document.getElementById('type').value;
+            const treatment = document.getElementById('treatment').value;
+            const conc = document.getElementById('conc').value;
+
+            fetch('/api/predict_emission', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'Plant': plant,
+                    'Type': type,
+                    'Treatment': treatment,
+                    'conc': parseFloat(conc),
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('predictionResult');
+                resultDiv.textContent = `Predicted Emission: ${data.predicted_emission}`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
